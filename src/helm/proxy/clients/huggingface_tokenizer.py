@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Optional
+from typing import Dict
 from threading import Lock
 
 from transformers import AutoTokenizer
@@ -16,15 +16,12 @@ class HuggingFaceTokenizers:
     _tokenizers_lock: Lock = Lock()
 
     @staticmethod
-    def create_tokenizer(pretrained_model_name_or_path: str, revision: Optional[str] = None) -> AutoTokenizer:
+    def create_tokenizer(pretrained_model_name_or_path: str, **kwargs) -> AutoTokenizer:
         """Loads tokenizer using files from disk if they exist. Otherwise, downloads from HuggingFace."""
         # To avoid deadlocks when using HuggingFace tokenizers with multiple processes
         # TODO: Figure out if we actually need this.
         os.environ["TOKENIZERS_PARALLELISM"] = "False"
 
-        tokenizer_kwargs = {}
-        if revision is not None:
-            tokenizer_kwargs["revision"] = revision
         try:
             # From the Hugging Face documentation, "local_files_only(defaults to False) —
             # Whether or not to only look at local files".
@@ -36,18 +33,16 @@ class HuggingFaceTokenizers:
             # the Hugging Face Transformers library, while the fast versions are the ones provided by Hugging Face
             # Tokenizers, which are written in Rust." So, use the "fast" version of the tokenizers if available.
             return AutoTokenizer.from_pretrained(
-                pretrained_model_name_or_path, local_files_only=True, use_fast=True, **tokenizer_kwargs
+                pretrained_model_name_or_path, local_files_only=True, use_fast=True, **kwargs
             )
         except OSError:
             hlog(f"Local files do not exist for HuggingFace tokenizer: {pretrained_model_name_or_path}. Downloading...")
             return AutoTokenizer.from_pretrained(
-                pretrained_model_name_or_path, local_files_only=False, use_fast=True, **tokenizer_kwargs
+                pretrained_model_name_or_path, local_files_only=False, use_fast=True, **kwargs
             )
 
     @staticmethod
-    def get_tokenizer(
-        helm_tokenizer_name: str, pretrained_model_name_or_path: str, revision: Optional[str] = None
-    ) -> AutoTokenizer:
+    def get_tokenizer(helm_tokenizer_name: str, pretrained_model_name_or_path: str, **kwargs) -> AutoTokenizer:
         """
         Checks if the desired tokenizer is cached. Creates the tokenizer if it's not cached.
         Returns the tokenizer.
@@ -55,13 +50,13 @@ class HuggingFaceTokenizers:
         with HuggingFaceTokenizers._tokenizers_lock:
             if helm_tokenizer_name not in HuggingFaceTokenizers._tokenizers:
                 with htrack_block(
-                    f"Loading {pretrained_model_name_or_path} (revision={revision}) "
+                    f"Loading {pretrained_model_name_or_path} (kwargs={kwargs}) "
                     f"for HELM tokenizer {helm_tokenizer_name} with Hugging Face Transformers"
                 ):
 
                     # Keep the tokenizer in memory, so we don't recreate it for future requests
                     HuggingFaceTokenizers._tokenizers[helm_tokenizer_name] = HuggingFaceTokenizers.create_tokenizer(
-                        pretrained_model_name_or_path, revision
+                        pretrained_model_name_or_path, **kwargs
                     )
 
         return HuggingFaceTokenizers._tokenizers[helm_tokenizer_name]
