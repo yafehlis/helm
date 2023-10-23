@@ -1,4 +1,5 @@
 from typing import List, Dict
+from transformers import LlamaForCausalLM, LlamaTokenizer
 
 from helm.common.cache import Cache, CacheConfig
 from helm.common.request import Request, RequestResult, Sequence, Token
@@ -10,19 +11,19 @@ from helm.common.tokenization_request import (
     TokenizationToken,
 )
 from .client import Client, wrap_request_time
-
+from helm.yao-models.dummy_llama import sample_model
 
 class AMDClient(Client):
     """Implements some "models" that just generate silly things quickly just to debug the infrastructure."""
 
     def __init__(self, cache_config: CacheConfig):
         self.cache = Cache(cache_config)
+        
 
-    # TO be removed
-    @staticmethod
-    def tokenize_by_space(text: str) -> List[str]:
-        """Simply tokenizes by a single white space."""
-        return text.split(" ")
+        self.llama7b_name_path = "/workspace/.cache/huggingface/hub/model-7B"
+
+        self.my_model = LlamaForCausalLM.from_pretrained(self.llama7b_name_path)
+        self.tokenizer = LlamaTokenizer.from_pretrained(llama7b_name_path)
 
     def make_request(self, request: Request) -> RequestResult:
         raw_request = {
@@ -31,23 +32,24 @@ class AMDClient(Client):
             "n": request.num_completions,
         }
 
-        if request.model_engine == "model1":
+        
+        input_ids = self.tokenizer(text, return_tensors="pt").input_ids
+        input_ids = torch.stack([input_ids[0]] * batch_size).to(my_model.device)
 
-            def do_it():
-                return self.invoke_model1(raw_request)
+        generated_ids = sample_model(self.my_model, input_ids)
+        
+        generated_ids = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
 
-            cache_key = Client.make_cache_key(raw_request, request)
-            response, cached = self.cache.get(cache_key, wrap_request_time(do_it))
+
             completions = [
                 Sequence(
-                    text=text,
-                    logprob=logprob,
-                    tokens=[Token(text=text, logprob=logprob, top_logprobs=response["completions"])],
+                    text=generated_ids,
+                    logprob=0.0,
+                    tokens=[],
                 )
                 for text, logprob in response["completions"].items()
             ]
-        else:
-            raise ValueError(f"Invalid model: {request.model}")
+
 
         return RequestResult(
             success=True,
@@ -64,16 +66,4 @@ class AMDClient(Client):
     def decode(self, request: DecodeRequest) -> DecodeRequestResult:
         raise NotImplementedError
 
-    # To be removed
-    def invoke_model1(self, raw_request: Dict) -> Dict:
-        """
-        Example: 7 2 4 6
-        Completions (num_completions = 3):
-        - 6
-        - 4
-        - 2
-        """
-        prompt_tokens: List[str] = SimpleClient.tokenize_by_space(raw_request["prompt"])
-        choices = reversed(prompt_tokens[-raw_request["n"] :])
-        response = {"completions": dict((text, -i) for i, text in enumerate(choices))}
-        return response
+ 
