@@ -16,6 +16,13 @@ models:
     access: limited
     num_parameters: 7500000000
     release_date: 2021-08-11
+  - name: amd/dummy-llama
+    display_name: dummy-llama (7B)
+    description: 
+    creator_organization: AMD
+    access: limited
+    num_parameters: 7500000000
+    release_date: 2023-13-13
   - name: ai21/j1-grande
     display_name: J1-Grande v1 (17B)
     description: Jurassic-1 Grande (17B parameters) with a "few tweaks" to the training process ([docs](https://studio.ai21.com/docs/jurassic1-language-models/), [tech report](https://uploads-ssl.webflow.com/60fd4503684b466578c0d307/61138924626a6981ee09caf6_jurassic_tech_paper.pdf)).
@@ -95,12 +102,6 @@ models:
     access: closed
     num_parameters: 52000000000
     release_date: 2021-12-01
-  - name: anthropic/claude-2.0
-    display_name: Anthropic Claude 2.0
-    description: Claude 2.0 is a general purpose large language model developed by Anthropic. It uses a transformer architecture and is trained via unsupervised learning, RLHF, and Constitutional AI (including both a supervised and Reinforcement Learning (RL) phase). ([model card](https://efficient-manatee.files.svdcdn.com/production/images/Model-Card-Claude-2.pdf))
-    creator_organization: Anthropic
-    access: limited
-    release_date: 2023-07-11
   - name: anthropic/claude-v1.3
     display_name: Anthropic Claude v1.3
     description: A model trained using reinforcement learning from human feedback ([docs](https://www.anthropic.com/index/introducing-claude)).
@@ -533,15 +534,6 @@ models:
     access: open
     num_parameters: 13000000000
     release_date: 2023-06-22
-
-  # Mistral AI
-  - name: mistralai/mistral-7b-v0.1
-    display_name: Mistral v0.1 (7B)
-    description: Mistral 7B is a  7.3B parameter transformer model that uses Grouped-Query Attention (GQA) and Sliding-Window Attention (SWA).
-    creator_organization: Mistral AI
-    access: open
-    num_parameters: 7300000000
-    release_date: 2023-09-27
 
   # Microsoft/NVIDIA
   - name: microsoft/TNLGv2_530B

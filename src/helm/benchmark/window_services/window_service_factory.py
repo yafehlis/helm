@@ -249,6 +249,7 @@ class WindowServiceFactory:
             "meta/llama-30b",
             "meta/llama-65b",
             "stanford/alpaca-7b",
+            "amd/dummy-llama"
         ]:
             from helm.benchmark.window_services.llama_window_service import LlamaWindowService
 
@@ -291,15 +292,6 @@ class WindowServiceFactory:
             from helm.benchmark.window_services.lit_gpt_window_service import LitGPTWindowServce
 
             window_service = LitGPTWindowServce(service)
-        elif organization == "mistralai":
-            window_service = HuggingFaceWindowService(service, tokenizer_name="mistralai/Mistral-7B-v0.1")
-        elif model_name in [
-            "HuggingFaceM4/idefics-9b",
-            "HuggingFaceM4/idefics-9b-instruct",
-            "HuggingFaceM4/idefics-80b",
-            "HuggingFaceM4/idefics-80b-instruct",
-        ]:
-            window_service = HuggingFaceWindowService(service, model_name)
         else:
             raise ValueError(f"Unhandled model name: {model_name}")
 
