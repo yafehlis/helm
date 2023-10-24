@@ -1,6 +1,8 @@
 from typing import List, Dict
 from transformers import LlamaForCausalLM, LlamaTokenizer
 
+import torch 
+
 from helm.common.cache import Cache, CacheConfig
 from helm.common.request import Request, RequestResult, Sequence, Token
 from helm.common.tokenization_request import (
@@ -19,37 +21,37 @@ class AMDClient(Client):
     def __init__(self, cache_config: CacheConfig):
         self.cache = Cache(cache_config)
 
-
+        self.batch_size = 1
         self.llama7b_name_path = "/home/yafehlis/.cache/huggingface/hub/model-7B"
 
         self.my_model = LlamaForCausalLM.from_pretrained(self.llama7b_name_path)
         self.tokenizer = LlamaTokenizer.from_pretrained(self.llama7b_name_path)
 
     def make_request(self, request: Request) -> RequestResult:
-        raw_request = {
-            "engine": request.model_engine,
-            "prompt": request.prompt,
-            "n": request.num_completions,
-        }
+        #raw_request = {
+        #    "engine": request.model_engine,
+        #    "prompt": request.prompt,
+        #    "n": request.num_completions,
+        #}
 
 
-        input_ids = self.tokenizer(text, return_tensors="pt").input_ids
-        input_ids = torch.stack([input_ids[0]] * batch_size).to(my_model.device)
+        input_ids = self.tokenizer(request.prompt, return_tensors="pt").input_ids
+        input_ids = torch.stack([input_ids[0]] * self.batch_size).to(self.my_model.device)
 
         generated_ids = sample_model(self.my_model, input_ids)
 
-        generated_ids = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
+        output = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
 
 
         completions = [
                 Sequence(
-                    text=generated_ids,
+                    text=output,
                     logprob=0.0,
                     tokens=[],
                 )
                 for text, logprob in response["completions"].items()
             ]
-
+        completions = [Sequence(text=output, logprob=0, tokens=generated_tokens)]
 
         return RequestResult(
             success=True,
