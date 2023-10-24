@@ -11,7 +11,7 @@ from helm.common.tokenization_request import (
     TokenizationToken,
 )
 from .client import Client, wrap_request_time
-from helm.yao-models.dummy_llama import sample_model
+from helm.yao_models.dummy_llama import sample_model
 
 class AMDClient(Client):
     """Implements some "models" that just generate silly things quickly just to debug the infrastructure."""
@@ -41,7 +41,7 @@ class AMDClient(Client):
         generated_ids = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
 
 
-            completions = [
+        completions = [
                 Sequence(
                     text=generated_ids,
                     logprob=0.0,
