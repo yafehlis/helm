@@ -20,10 +20,10 @@ class AMDClient(Client):
         self.cache = Cache(cache_config)
 
 
-        self.llama7b_name_path = "/workspace/.cache/huggingface/hub/model-7B"
+        self.llama7b_name_path = "/home/yafehlis/.cache/huggingface/hub/model-7B"
 
         self.my_model = LlamaForCausalLM.from_pretrained(self.llama7b_name_path)
-        self.tokenizer = LlamaTokenizer.from_pretrained(llama7b_name_path)
+        self.tokenizer = LlamaTokenizer.from_pretrained(self.llama7b_name_path)
 
     def make_request(self, request: Request) -> RequestResult:
         raw_request = {
