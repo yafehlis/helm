@@ -1,6 +1,14 @@
 ---
 ############################################################
 models:
+  # AMD
+  - name: amd/dummy-llama
+    display_name: dummy-llama (7B)
+    description: 
+    creator_organization: AMD
+    access: limited
+    num_parameters: 7500000000
+    release_date: 2023-13-13
   # AI21 Labs
   - name: ai21/j1-jumbo
     display_name: J1-Jumbo v1 (178B)

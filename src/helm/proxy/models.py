@@ -119,6 +119,12 @@ ALL_MODELS = [
         name="neurips/local",
         tags=[TEXT_MODEL_TAG, FULL_FUNCTIONALITY_TEXT_MODEL_TAG, GPT2_TOKENIZER_TAG],
     ),
+    # AMD
+    Model(
+        group="amd",
+        name="amd/dummy-llama",
+        tags=[TEXT_MODEL_TAG, FULL_FUNCTIONALITY_TEXT_MODEL_TAG],
+    ),
     # AI21: https://studio.ai21.com/pricing
     Model(
         group="jurassic",

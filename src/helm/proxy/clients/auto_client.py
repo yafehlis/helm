@@ -176,6 +176,10 @@ class AutoClient(Client):
                 from helm.proxy.clients.simple_client import SimpleClient
 
                 client = SimpleClient(cache_config=cache_config)
+            elif organization == "amd":
+                from helm.proxy.clients.amd_client import AMDClient
+
+                client = AMDClient(cache_config=cache_config)
             elif organization == "writer":
                 from helm.proxy.clients.palmyra_client import PalmyraClient
 
