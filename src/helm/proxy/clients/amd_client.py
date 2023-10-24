@@ -29,22 +29,13 @@ class AMDClient(Client):
 
     def make_request(self, request: Request) -> RequestResult:
 
-        print("request.prompt is ", request.prompt)
-        print("-----------------------------------")
         input_ids = self.tokenizer(request.prompt, return_tensors="pt").input_ids
-        print("input_ids is ", input_ids)
-        print("**********************************")
         input_ids = torch.stack([input_ids[0]] * self.batch_size).to(self.my_model.device)
 
         generated_ids = sample_model(self.my_model, input_ids)
-        print("generated_ids is ", generated_ids)
-        print("111111111111111111111111111111111111111111")
-
         generated_tokens = self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)
-        print("generated_tokens is ", generated_tokens)
-        print("222222222222222222222222222222222222222")
-        completions = [Sequence(text=generated_tokens, logprob=0, tokens=[])]
 
+        completions = [Sequence(text=generated_tokens, logprob=0, tokens=[])]
 
         return RequestResult(
             success=True,

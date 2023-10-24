@@ -39,7 +39,6 @@ def sample_model(model,
                  input_ids,
                  nb_tokens=MAX_NEW_TOKENS,
                  temperature=TEMPERATURE):
-    print("inside of sample_model function")
     for _ in range(nb_tokens):
         outputs = model(input_ids)
         next_token_logits = outputs.logits[:, -1, :]
@@ -52,8 +51,7 @@ if __name__ == "__main__":
     nb_tokens = 0
     for text in texts:
         input_ids = tokenizer(text, return_tensors="pt").input_ids
-        print("input_ids is ", input_ids)
-        print("**********************************")
+
         input_ids = torch.stack([input_ids[0]] * batch_size).to(my_model.device)
 
         generated_ids = sample_model(my_model, input_ids)
