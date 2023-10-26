@@ -24,7 +24,7 @@ class AMDClient(Client):
         self.batch_size = 1
         self.llama7b_name_path = "/home/yafehlis/.cache/huggingface/hub/model-7B"
 
-        self.my_model = LlamaForCausalLM.from_pretrained(self.llama7b_name_path)
+        self.my_model = LlamaForCausalLM.from_pretrained(self.llama7b_name_path).to("cuda:0")
         self.tokenizer = LlamaTokenizer.from_pretrained(self.llama7b_name_path)
 
     def make_request(self, request: Request) -> RequestResult:
