@@ -22,21 +22,13 @@ class AMDClient(Client):
         self.cache = Cache(cache_config)
 
         self.batch_size = 1
-<<<<<<< HEAD
         self.llama7b_name_path = "/workspace/.cache/huggingface/hub/model-7B"
 
         self.my_model = LlamaForCausalLM.from_pretrained(self.llama7b_name_path, device_map='balanced')
-=======
-        self.llama7b_name_path = "/home/yafehlis/.cache/huggingface/hub/model-7B"
-
-        self.my_model = LlamaForCausalLM.from_pretrained(self.llama7b_name_path, device_map='balanced')
-        #self.my_model = LlamaForCausalLM.from_pretrained(self.llama7b_name_path, device_map='balanced')
->>>>>>> 0837e9de1f51c8334cdc92f3ce4428c129356592
         self.tokenizer = LlamaTokenizer.from_pretrained(self.llama7b_name_path)
 
     def make_request(self, request: Request) -> RequestResult:
 
-<<<<<<< HEAD
         tokenizer = self.tokenizer
         encoded = tokenizer(request.prompt, return_tensors="pt").input_ids
         #prompt_length = encoded.size(0)
@@ -51,14 +43,14 @@ class AMDClient(Client):
         print("tokens are ", tokens)
         print("request.echo_prompt is ", request.echo_prompt)
         if request.echo_prompt is False:
-            output = tokenizer.decode(tokens[prompt_length:])
+            output = tokenizer.decode(tokens[0][prompt_length:], skip_special_tokens=True)
+            print("length of output is ", len(output)) 
         else:
-            output = tokenizer.decode(tokens)
-
-        output = tokenizer.decode(tokens[0], skip_special_tokens=True)
+            output = tokenizer.decode(tokens[0], skip_special_tokens=True)
 
         generated_tokens = []
-        for token in tokens:
+        for token in tokens[0][prompt_length:]:
+            print("token is ", token)
             generated_tokens.append(Token(text=tokenizer.decode(token), logprob=0, top_logprobs={}))
         
         print("output is ", output)
@@ -68,15 +60,6 @@ class AMDClient(Client):
         #generated_tokens = self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)
 
         #completions = [Sequence(text=generated_tokens, logprob=0, tokens=tokens)]
-=======
-        input_ids = self.tokenizer(request.prompt, return_tensors="pt").input_ids
-        input_ids = torch.stack([input_ids[0]] * self.batch_size).to(self.my_model.device)
-
-        generated_ids = sample_model(self.my_model, input_ids)
-        generated_tokens = self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)
-
-        completions = [Sequence(text=generated_tokens, logprob=0, tokens=[])]
->>>>>>> 0837e9de1f51c8334cdc92f3ce4428c129356592
 
         return RequestResult(
             success=True,
