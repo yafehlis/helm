@@ -1,6 +1,8 @@
 from typing import List, Dict
 from transformers import LlamaForCausalLM, LlamaTokenizer
 
+import torch 
+
 from helm.common.cache import Cache, CacheConfig
 from helm.common.request import Request, RequestResult, Sequence, Token
 from helm.common.tokenization_request import (
@@ -11,51 +13,58 @@ from helm.common.tokenization_request import (
     TokenizationToken,
 )
 from .client import Client, wrap_request_time
-from helm.yao-models.dummy_llama import sample_model
+from helm.yao_models.dummy_llama import sample_model
 
 class AMDClient(Client):
     """Implements some "models" that just generate silly things quickly just to debug the infrastructure."""
 
     def __init__(self, cache_config: CacheConfig):
         self.cache = Cache(cache_config)
-        
 
+        self.batch_size = 1
         self.llama7b_name_path = "/workspace/.cache/huggingface/hub/model-7B"
 
-        self.my_model = LlamaForCausalLM.from_pretrained(self.llama7b_name_path)
-        self.tokenizer = LlamaTokenizer.from_pretrained(llama7b_name_path)
+        self.my_model = LlamaForCausalLM.from_pretrained(self.llama7b_name_path, device_map='balanced')
+        self.tokenizer = LlamaTokenizer.from_pretrained(self.llama7b_name_path)
 
     def make_request(self, request: Request) -> RequestResult:
-        raw_request = {
-            "engine": request.model_engine,
-            "prompt": request.prompt,
-            "n": request.num_completions,
-        }
 
+        tokenizer = self.tokenizer
+        encoded = tokenizer(request.prompt, return_tensors="pt").input_ids
+        #prompt_length = encoded.size(0)
+    
+        print("----------------------")
+        input_ids = torch.stack([encoded[0]] * self.batch_size).to(self.my_model.device)
+
+        prompt_length = len(input_ids[0])
+        print("prompt length is ", prompt_length)
+        print("input_ids ", input_ids)
+        tokens = sample_model(self.my_model, input_ids)
+        print("tokens are ", tokens)
+        print("request.echo_prompt is ", request.echo_prompt)
+        if request.echo_prompt is False:
+            output = tokenizer.decode(tokens[prompt_length:])
+        else:
+            output = tokenizer.decode(tokens)
+
+        output = tokenizer.decode(tokens[0], skip_special_tokens=True)
+
+        generated_tokens = []
+        for token in tokens:
+            generated_tokens.append(Token(text=tokenizer.decode(token), logprob=0, top_logprobs={}))
         
-        input_ids = self.tokenizer(text, return_tensors="pt").input_ids
-        input_ids = torch.stack([input_ids[0]] * batch_size).to(my_model.device)
+        print("output is ", output)
+        print("generated tokens are ", generated_tokens)
+        completions = [Sequence(text=output, logprob=0, tokens=generated_tokens)]
 
-        generated_ids = sample_model(self.my_model, input_ids)
-        
-        generated_ids = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
+        #generated_tokens = self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)
 
-
-            completions = [
-                Sequence(
-                    text=generated_ids,
-                    logprob=0.0,
-                    tokens=[],
-                )
-                for text, logprob in response["completions"].items()
-            ]
-
+        #completions = [Sequence(text=generated_tokens, logprob=0, tokens=tokens)]
 
         return RequestResult(
             success=True,
             cached=False,
             request_time=0,
-            request_datetime=response.get("request_datetime"),
             completions=completions,
             embedding=[],
         )
@@ -65,5 +74,3 @@ class AMDClient(Client):
 
     def decode(self, request: DecodeRequest) -> DecodeRequestResult:
         raise NotImplementedError
-
- 
