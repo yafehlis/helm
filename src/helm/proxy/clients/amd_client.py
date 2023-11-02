@@ -28,25 +28,38 @@ class AMDClient(Client):
         self.tokenizer = LlamaTokenizer.from_pretrained(self.llama7b_name_path)
 
     def make_request(self, request: Request) -> RequestResult:
+
         tokenizer = self.tokenizer
-        
         encoded = tokenizer(request.prompt, return_tensors="pt").input_ids
+        #prompt_length = encoded.size(0)
+    
+        print("----------------------")
         input_ids = torch.stack([encoded[0]] * self.batch_size).to(self.my_model.device)
 
         prompt_length = len(input_ids[0])
-        tokens = sample_model(self.my_model, input_ids)
-        
+        print("prompt length is ", prompt_length)
+        print("input_ids ", input_ids)
+        tokens = sample_model(self.my_model, input_ids, nb_tokens=1) # nb_tokens=1 for HELM testing
+        print("tokens are ", tokens)
+        print("request.echo_prompt is ", request.echo_prompt)
         if request.echo_prompt is False:
             output = tokenizer.decode(tokens[0][prompt_length:], skip_special_tokens=True)
+            print("length of output is ", len(output)) 
         else:
             output = tokenizer.decode(tokens[0], skip_special_tokens=True)
 
         generated_tokens = []
-        for token in tokens[0][prompt_length:]: # This is different than lit_gpt_client.py
+        for token in tokens[0][prompt_length:]:
+            print("token is ", token)
             generated_tokens.append(Token(text=tokenizer.decode(token), logprob=0, top_logprobs={}))
         
+        print("output is ", output)
+        print("generated tokens are ", generated_tokens)
         completions = [Sequence(text=output, logprob=0, tokens=generated_tokens)]
 
+        #generated_tokens = self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+
+        #completions = [Sequence(text=generated_tokens, logprob=0, tokens=tokens)]
 
         return RequestResult(
             success=True,
