@@ -249,7 +249,11 @@ class WindowServiceFactory:
             "meta/llama-30b",
             "meta/llama-65b",
             "stanford/alpaca-7b",
+<<<<<<< HEAD
             "amd/dummy-llama"
+=======
+            "amd/dummy-llama",
+>>>>>>> 0837e9de1f51c8334cdc92f3ce4428c129356592
         ]:
             from helm.benchmark.window_services.llama_window_service import LlamaWindowService
 

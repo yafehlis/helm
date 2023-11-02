@@ -115,7 +115,11 @@ ALL_MODELS = [
         name="neurips/local",
         tags=[TEXT_MODEL_TAG, FULL_FUNCTIONALITY_TEXT_MODEL_TAG, GPT2_TOKENIZER_TAG],
     ),
+<<<<<<< HEAD
     # Local Model
+=======
+    # AMD
+>>>>>>> 0837e9de1f51c8334cdc92f3ce4428c129356592
     Model(
         group="amd",
         name="amd/dummy-llama",

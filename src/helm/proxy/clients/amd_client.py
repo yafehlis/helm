@@ -22,13 +22,21 @@ class AMDClient(Client):
         self.cache = Cache(cache_config)
 
         self.batch_size = 1
+<<<<<<< HEAD
         self.llama7b_name_path = "/workspace/.cache/huggingface/hub/model-7B"
 
         self.my_model = LlamaForCausalLM.from_pretrained(self.llama7b_name_path, device_map='balanced')
+=======
+        self.llama7b_name_path = "/home/yafehlis/.cache/huggingface/hub/model-7B"
+
+        self.my_model = LlamaForCausalLM.from_pretrained(self.llama7b_name_path, device_map='balanced')
+        #self.my_model = LlamaForCausalLM.from_pretrained(self.llama7b_name_path, device_map='balanced')
+>>>>>>> 0837e9de1f51c8334cdc92f3ce4428c129356592
         self.tokenizer = LlamaTokenizer.from_pretrained(self.llama7b_name_path)
 
     def make_request(self, request: Request) -> RequestResult:
 
+<<<<<<< HEAD
         tokenizer = self.tokenizer
         encoded = tokenizer(request.prompt, return_tensors="pt").input_ids
         #prompt_length = encoded.size(0)
@@ -60,6 +68,15 @@ class AMDClient(Client):
         #generated_tokens = self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)
 
         #completions = [Sequence(text=generated_tokens, logprob=0, tokens=tokens)]
+=======
+        input_ids = self.tokenizer(request.prompt, return_tensors="pt").input_ids
+        input_ids = torch.stack([input_ids[0]] * self.batch_size).to(self.my_model.device)
+
+        generated_ids = sample_model(self.my_model, input_ids)
+        generated_tokens = self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+
+        completions = [Sequence(text=generated_tokens, logprob=0, tokens=[])]
+>>>>>>> 0837e9de1f51c8334cdc92f3ce4428c129356592
 
         return RequestResult(
             success=True,
